@@ -7,7 +7,8 @@ File    : openpyxl的封装.py
 ============================
 """
 import openpyxl
-
+class CaseData:
+    pass
 
 class ReadExcel(object):
 
@@ -31,27 +32,56 @@ class ReadExcel(object):
     def read_excel(self):
         # 1、打开工作簿，选中表单
         self.open()
-        max_row = self.sh.max_row
+        rows = list(self.sh.rows)
         list_data=[]
-        for i in range(1, max_row + 1):
-            data1 = self.sh.cell(row=i, column=1).value
-            data2 = self.sh.cell(row=i, column=2).value
-            data3 = self.sh.cell(row=i, column=3).value
-            data4 = self.sh.cell(row=i, column=4).value
-            list_data.append([data1,data2,data3,data4])
-        # print(list_data)
-        title=list_data[0]
-        cases=[]
-        for i in list_data[1:]:
-            data=dict(zip(title,i))
-            cases.append(data)
-        return (cases)
+        title=[]
+        for i in rows[0]:
+            title.append(i.value)
+
+        for v in rows[1:]:
+            data=[]
+            for row in v:
+                data.append(row.value)
+            datas=dict(zip(title,data))
+            list_data.append(datas)
+        return (list_data)
+
+    def read_excel_object(self):
+        # 1、打开工作簿，选中表单
+        self.open()
+        rows = list(self.sh.rows)
+        list_data = []
+        title = []
+        for i in rows[0]:
+            title.append(i.value)
+        class MyDada:
+            pass
+
+        for v in rows[1:]:
+            data = []
+            for row in v:
+                data.append(row.value)
+            datas = list(zip(title, data))
+            cases = CaseData()
+            for m,n in datas:
+                setattr(cases,m,n)
+            list_data.append(cases)
+        return (list_data)
 
 
 
-    def write_excel(self):
-        pass
 
 
-excel = ReadExcel('cases.xlsx', 'register')
-excel.read_excel()
+    def write_excel(self,row,column,value):
+        self.open()
+        self.sh.cell(row=row,column=column,value=value)
+        self.wb.save(self.filename)
+
+
+
+
+
+
+if __name__ == '__main__':
+    excel = ReadExcel('cases.xlsx', 'register')
+    excel.read_excel_object()

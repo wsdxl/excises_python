@@ -9,7 +9,11 @@ File    : readexcel.py
 
 import openpyxl
 
+# 用来创建对象保存用例数据的类
+class CaseData:
+    pass
 
+# 创建读取测试数据类
 class ReadExcel(object):
 
     def __init__(self, filename, sheetname):
@@ -26,29 +30,65 @@ class ReadExcel(object):
         self.wb = openpyxl.load_workbook(self.filename)
         self.sh = self.wb[self.sheetname]
 
-    def save(self):
-        self.wb.save(self.filename)
+    def close(self):
+        '''关闭工作簿，释放资源'''
+        self.wb.close()
 
     def read_excel(self):
+        '''
+
+        :return: 列表嵌套字典格式
+        '''
         # 1、打开工作簿，选中表单
         self.open()
-        max_row = self.sh.max_row
-        list_data=[]
-        for i in range(1, max_row + 1):
-            data1 = self.sh.cell(row=i, column=1).value
-            data2 = self.sh.cell(row=i, column=2).value
-            data3 = self.sh.cell(row=i, column=3).value
-            data4 = self.sh.cell(row=i, column=4).value
-            list_data.append([data1,data2,data3,data4])
-        # print(list_data)
-        title=list_data[0]
-        cases=[]
-        for i in list_data[1:]:
-            data=dict(zip(title,i))
-            cases.append(data)
-        return (cases)
+        # 以列表格式读取所有表格
+        rows = list(self.sh.rows)
+        list_data = []
+        title = []
+        # 遍历表头，存放入列表
+        for i in rows[0]:
+            title.append(i.value)
+        # 遍历除了表头外的其他表格
+        for v in rows[1:]:
+            data = []
+            for row in v:
+                data.append(row.value)
+            datas = dict(zip(title, data))
+            list_data.append(datas)
+        self.close()
+        return (list_data)
+
+    def read_excel_object(self):
+        # 1、打开工作簿，选中表单
+        self.open()
+        rows = list(self.sh.rows)
+        list_data = []
+        title = []
+        for i in rows[0]:
+            title.append(i.value)
+
+        for v in rows[1:]:
+            data = []
+            for row in v:
+                data.append(row.value)
+            datas = list(zip(title, data))
+            cases = CaseData()
+            for m, n in datas:
+                setattr(cases, m, n)
+            list_data.append(cases)
+        self.close()
+        return (list_data)
 
 
+    def write_excel(self,row,column,value):
+        '''
 
-    def write_excel(self):
-        pass
+        :param row: 行
+        :param column: 宽
+        :param value: 值
+        :return:
+        '''
+        self.open()
+        self.sh.cell(row=row,column=column,value=value)
+        self.wb.save(self.filename)
+        self.close()
