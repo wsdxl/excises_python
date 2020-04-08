@@ -28,7 +28,7 @@ def my_logger():
     # fh = logging.FileHandler(filename, encoding='utf8')
 
     # 按文件大小进行轮转
-    fh=RotatingFileHandler('test.log',maxBytes=1024*1024*20,backupCount=3,encoding='utf8')
+    fh=RotatingFileHandler(r'F:\project\excise_unittest\logs\test.log',maxBytes=1024*1024*20,backupCount=3,encoding='utf8')
 
     # # 按时间进行轮转
     # fh=TimedRotatingFileHandler('test.log',when='S',interval=1,backupCount=7,encoding='utf8')
@@ -47,8 +47,8 @@ def my_logger():
 mylog=my_logger()
 
 
-mylog.debug("这个是自己记录了的debug等级的日志")
-mylog.info("这个是自己记录了的info等级的日志")
-mylog.warning("这个是自己记录了的warning等级的日志")
-mylog.error("这个是自己记录了的error等级的日志")
-mylog.critical("这个是自己记录了的critical等级的日志")
+# mylog.debug("这个是自己记录了的debug等级的日志")
+# mylog.info("这个是自己记录了的info等级的日志")
+# mylog.warning("这个是自己记录了的warning等级的日志")
+# mylog.error("这个是自己记录了的error等级的日志")
+# mylog.critical("这个是自己记录了的critical等级的日志")
