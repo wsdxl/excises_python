@@ -92,3 +92,8 @@ class ReadExcel(object):
         self.sh.cell(row=row,column=column,value=value)
         self.wb.save(self.filename)
         self.close()
+
+if __name__ == '__main__':
+    excel=ReadExcel('cases.xlsx','register')
+    datas=excel.read_excel()
+    print(datas)
