@@ -8,19 +8,23 @@ File    : mylogger.py
 """
 import logging
 from logging.handlers import RotatingFileHandler,TimedRotatingFileHandler
+from common.read_conf import conf
+level=conf.get('logging','level')
+f_level=conf.get('logging','f_level')
+s_level=conf.get('logging','s_level')
 
 def my_logger():
 
     # 自定义名字为python的日志收集器
     mylog = logging.getLogger('python')
     # 设置日志收集器等级为debug等级
-    mylog.setLevel('DEBUG')
+    mylog.setLevel(level)
 
     # 创建输出渠道
     # 1、控制台输出渠道
     sh = logging.StreamHandler()
     # 设置控制台输出渠道的等级
-    sh.setLevel('INFO')
+    sh.setLevel(s_level)
     # 将控制台输出渠道绑定到日志收集器上
     mylog.addHandler(sh)
 
@@ -33,7 +37,7 @@ def my_logger():
     # # 按时间进行轮转
     # fh=TimedRotatingFileHandler('test.log',when='S',interval=1,backupCount=7,encoding='utf8')
     # 设置控制台输出渠道的等级
-    fh.setLevel('DEBUG')
+    fh.setLevel(f_level)
     # 将控制台输出渠道绑定到日志收集器上
     mylog.addHandler(fh)
 
