@@ -6,16 +6,21 @@ E-mail  : 506615839@qq.com
 File    : testcase.py
 ============================
 """
+import os
 import unittest
 from library.ddt import ddt,data
 from common.readexcel import ReadExcel
 from login_register.register import register
 from login_register.login import login_check
 from common.mylogger import mylog
+from common.contants import DATA_DIR
+
+# 获取测试用例数据的绝对路径
+data_path=os.path.join(DATA_DIR,'cases.xlsx')
 
 @ddt
 class TestRegister(unittest.TestCase):
-    excel=ReadExcel(r'F:\project\excise_unittest\data\cases.xlsx','register')
+    excel=ReadExcel(data_path,'register')
     register_data=excel.read_excel()
 
     @data(*register_data)
@@ -41,7 +46,7 @@ class TestRegister(unittest.TestCase):
 
 @ddt
 class TestLogin(unittest.TestCase):
-    excel=ReadExcel(r'F:\project\excise_unittest\data\cases.xlsx','login')
+    excel=ReadExcel(data_path,'login')
     login_data=excel.read_excel()
 
     @data(*login_data)

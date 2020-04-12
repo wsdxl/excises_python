@@ -18,8 +18,6 @@ class MyConf(ConfigParser):
         self.encoding=encoding
         self.read(filename,encoding)
 
-
-
     def write_conf(self,section,option,value):
         self.set(section,option,value)
         self.write(open(self.filename,'w',encoding=self.encoding))
@@ -27,3 +25,6 @@ class MyConf(ConfigParser):
 # 获取配置文件的绝对路径
 conf_path=os.path.join(CONF_DIR,'conf.ini')
 conf=MyConf(conf_path)
+if __name__ == '__main__':
+    url=conf.get('env','url')+'/member/register'
+    print(url)
