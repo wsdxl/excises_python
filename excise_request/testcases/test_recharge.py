@@ -34,7 +34,7 @@ class TestRecharge(unittest.TestCase):
         login_url=conf.get('env','url')+'/member/login'
         data={
             'mobile_phone':conf.get('env','phone'),
-            'pwd':conf.get('env','password')}
+            'pwd':conf.get('env','pwd')}
         headers=eval(conf.get('env','headers'))
         # 发送请求
         response=cls.http.send(url=login_url,method='post',json=data,headers=headers)
@@ -61,8 +61,9 @@ class TestRecharge(unittest.TestCase):
         row=case['case_id']+1
 
         # 发送请求前查询一下账号余额
-        sql = 'select * from futureloan.member where mobile_phone={}'.format(conf.get('env', 'phone'))
-        before_amount = self.db.get_one(sql)[5]
+        if case['check_sql']:
+            sql=case['check_sql'].format(conf.get('env','phone'))
+            before_amount = self.db.get_one(sql)[0]
 
         # 发送请求，获取响应结果
         response=self.http.send(url=recharge_url,method=method,json=recharge_data,headers=headers)
@@ -71,9 +72,9 @@ class TestRecharge(unittest.TestCase):
         try:
             self.assertEqual(expected['code'],res['code'])
             self.assertEqual(expected['msg'],res['msg'])
-            if res['msg']=='OK':
-                sql1 = 'select * from futureloan.member where mobile_phone={}'.format(conf.get('env', 'phone'))
-                after_amount=self.db.get_one(sql1)[5]
+            if case['check_sql']:
+                sql =case['check_sql'].format(conf.get('env','phone'))
+                after_amount=self.db.get_one(sql)[0]
                 self.assertEqual((after_amount-before_amount),Decimal(str(recharge_data['amount'])))
 
         except AssertionError as e:

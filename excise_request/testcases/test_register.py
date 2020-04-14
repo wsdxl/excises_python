@@ -50,8 +50,9 @@ class TestRegister(unittest.TestCase):
         try:
             self.assertEqual(expected['code'], res['code'])
             self.assertEqual(expected['msg'], res['msg'])
-            if res['msg']=='OK':
-                sql='select * from futureloan.member where mobile_phone={}'.format(phone)
+            if case['check_sql']:
+                print(case['check_sql'],type(case['check_sql']))
+                sql=case['check_sql'].format(conf.get('env','phone'))
                 count=self.db.count(sql)
                 self.assertEqual(count,1)
         except AssertionError as e:

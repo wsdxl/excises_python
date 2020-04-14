@@ -53,9 +53,9 @@ class TestWithdraw(unittest.TestCase):
         row = case['case_id'] + 1
 
         # 发送请求前查询账号余额
-        if case['interface'] !='登录':
-            sql = 'select * from futureloan.member where mobile_phone={}'.format(conf.get('env', 'phone'))
-            before_amount = self.db.get_one(sql)[5]
+        if case['check_sql']:
+            sql =case['check_sql'].format(conf.get('env','phone'))
+            before_amount = self.db.get_one(sql)[0]
 
         # 发送请求，获取响应结果
         response = self.http.send(url=withdraw_url, method=method, json=withdraw_data, headers=headers)
@@ -73,9 +73,9 @@ class TestWithdraw(unittest.TestCase):
             self.assertEqual(expected['code'], res['code'])
             self.assertEqual(expected['msg'], res['msg'])
 
-            if case['interface']!='登录' and res['msg']=='OK':
-                sql = 'select * from futureloan.member where mobile_phone={}'.format(conf.get('env', 'phone'))
-                after_amount = self.db.get_one(sql)[5]
+            if case['check_sql']:
+                sql =case['check_sql'].format(conf.get('env','phone'))
+                after_amount = self.db.get_one(sql)[0]
                 self.assertEqual((before_amount-after_amount),Decimal(str(withdraw_data['amount'])))
 
 
@@ -91,5 +91,8 @@ class TestWithdraw(unittest.TestCase):
             mylog.info('用例：{}---->测试已通过'.format(case['title']))
 
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.close()
 if __name__ == '__main__':
     unittest.main()
