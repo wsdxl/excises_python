@@ -17,6 +17,7 @@ from common.hande_request import HandleRequest
 from common.mylogger import mylog
 from common.hande_db import Hande_DB
 from decimal import Decimal
+from common.hande_data import CaseData,replace_data
 
 data_path=os.path.join(DATA_DIR,'cases.xlsx')
 
@@ -40,23 +41,25 @@ class TestRecharge(unittest.TestCase):
         response=cls.http.send(url=login_url,method='post',json=data,headers=headers)
         res=response.json()
         #保存member_id
-        cls.member_id=jsonpath.jsonpath(res,'$..id')[0]
+        member_id=jsonpath.jsonpath(res,'$..id')[0]
+        setattr(CaseData,'member_id',str(member_id))
         token_type=jsonpath.jsonpath(res,'$..token_type')[0]
         token = jsonpath.jsonpath(res, '$..token')[0]
         # 拼接token认证数据
-        cls.json_data=token_type+' '+token
+        token_data=token_type+' '+token
+        setattr(CaseData,'token_data',token_data)
+
 
 
     @data(*case_data)
     def test_recharge(self,case):
         # 准备测试数据
         recharge_url=conf.get('env','url')+case['url']
-        if '#member_id#' in case['data']:
-            case['data']=case['data'].replace('#member_id#',str(self.member_id))
+        case['data']=replace_data(case['data'])
         recharge_data=eval(case['data'])
         method=case['method']
         headers=eval(conf.get('env','headers'))
-        headers['Authorization']=self.json_data
+        headers['Authorization']=getattr(CaseData,'token_data')
         expected=eval(case['expected'])
         row=case['case_id']+1
 

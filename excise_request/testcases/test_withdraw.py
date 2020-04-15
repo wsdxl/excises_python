@@ -25,6 +25,7 @@ from common.hande_request import HandleRequest
 from common.mylogger import mylog
 from common.hande_db import Hande_DB
 from decimal import Decimal
+from common.hande_data import CaseData,replace_data
 
 data_path = os.path.join(DATA_DIR, 'cases.xlsx')
 
@@ -40,18 +41,14 @@ class TestWithdraw(unittest.TestCase):
     def test_withdraw(self, case):
         # 准备测试数据
         withdraw_url = conf.get('env', 'url') + case['url']
-        if '#member_id#' in case['data']:
-            case['data'] = case['data'].replace('#member_id#', str(self.member_id))
-        if '#phone#' in case['data']:
-            case['data'] = case['data'].replace('#phone#', conf.get('env', 'phone'))
+        case['data']=replace_data(case['data'])
         withdraw_data = eval(case['data'])
         method = case['method']
         headers = eval(conf.get('env', 'headers'))
         if case['interface'] !='登录':
-            headers['Authorization'] =self.token_data
-        expected = eval(case['expected'])
+            headers['Authorization'] =CaseData.token_data
         row = case['case_id'] + 1
-
+        expected=eval(case['expected'])
         # 发送请求前查询账号余额
         if case['check_sql']:
             sql =case['check_sql'].format(conf.get('env','phone'))
@@ -63,10 +60,13 @@ class TestWithdraw(unittest.TestCase):
 
         # 判断是登录接口还是提现接口
         if case['interface'] == '登录':
-            TestWithdraw.member_id = jsonpath.jsonpath(res, '$..id')[0]
+            member_id = jsonpath.jsonpath(res, '$..id')[0]
+
             token_type = jsonpath.jsonpath(res, '$..token_type')[0]
             token = jsonpath.jsonpath(res, '$..token')[0]
-            TestWithdraw.token_data = token_type + ' ' + token
+            token_data = token_type + ' ' + token
+            setattr(CaseData, 'member_id', str(member_id))
+            setattr(CaseData,'token_data',token_data)
 
         # 比对预期结果与实际结果
         try:

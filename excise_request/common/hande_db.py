@@ -44,7 +44,7 @@ class Hande_DB:
 
 if __name__ == '__main__':
     db=Hande_DB()
-    sql='select * from futureloan.member where mobile_phone={}'.format(conf.get('env','phone'))
-    count=db.get_one(sql)[5]
+    sql='select * from futureloan.loan where member_id="{}"'.format(8029418)
+    count=db.count(sql)
     print(count,type(count))
 
