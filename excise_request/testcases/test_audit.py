@@ -38,7 +38,7 @@ class TestAudit(unittest.TestCase):
 
         # 提取token值和member_id
         id = jsonpath.jsonpath(res, '$..id')[0]
-        setattr(CaseData, 'admin_member_id', str(id))
+        setattr(CaseData, 'member_id', str(id))
         token_type = jsonpath.jsonpath(res, '$..token_type')[0]
         token = jsonpath.jsonpath(res, '$..token')[0]
         token_data = token_type + ' ' + token
@@ -46,7 +46,7 @@ class TestAudit(unittest.TestCase):
 
     def setUp(self):
         url = conf.get('env', 'url') + '/loan/add'
-        data= {"member_id":CaseData.admin_member_id,
+        data= {"member_id":getattr(CaseData,'member_id'),
                 "title":"升职加薪",
                 "amount":5000,
                 "loan_rate":18,
@@ -58,9 +58,10 @@ class TestAudit(unittest.TestCase):
 
         response=self.http.send(url=url,method='post',json=data,headers=headers)
         res=response.json()
+        print('loan_res:',res)
         # 提取id
-        id=jsonpath.jsonpath(res,'$..id')[0]
-        setattr(CaseData,'loan_id',str(id))
+        load_id=jsonpath.jsonpath(res,'$..id')[0]
+        setattr(CaseData,'loan_id',str(load_id))
 
 
 
@@ -74,16 +75,17 @@ class TestAudit(unittest.TestCase):
         headers['Authorization'] = getattr(CaseData, 'token_data')
         expected=eval(case['expected'])
         method=case['method']
-        row=case['case_id']+1
+        row=case['case_id']+ 1
 
         # 发送请求
         response = self.http.send(url=url, method=method, json=data, headers=headers)
         res = response.json()
-        # 提取审核通过的member_id
+        print('audit_res:',res)
 
-        if res['msg']=='OK' and res['status']==2:
-            id=jsonpath.jsonpath(res,'$..id')[0]
-            setattr(CaseData,'pass_loan_id',str(id))
+        # 提取审核通过的member_id
+        if res['msg']=='OK' and case['title']=='审核通过':
+            pass_loan_id=getattr(CaseData,'loan_id')
+            getattr(CaseData,'pass_loan_id',pass_loan_id)
 
          # 断言
         try:
