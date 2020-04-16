@@ -17,9 +17,9 @@ class HandleRequest:
         if method == 'post':
             return requests.post(url=url, json=json, data=data, headers=headers)
         elif method == 'patch':
-            return requests.post(url=url, json=json, data=data, headers=headers)
+            return requests.patch(url=url, json=json, data=data, headers=headers)
         elif method == 'get':
-            return requests.post(url=url, params=params, headers=headers)
+            return requests.post(url=url, params=params)
 
 
 class HandeSession:
