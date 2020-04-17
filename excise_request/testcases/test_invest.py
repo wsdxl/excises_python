@@ -15,6 +15,8 @@ from common.contants import DATA_DIR
 from common.read_conf import conf
 from common.hande_data import CaseData,replace_data
 from common.hande_request import HandleRequest
+from common.mylogger import mylog
+from common.hande_db import Hande_DB
 
 
 data_path=os.path.join(DATA_DIR,'cases.xlsx')
@@ -24,6 +26,7 @@ class TestInvest(unittest.TestCase):
     excel=ReadExcel(data_path,'invest')
     cases=excel.read_excel()
     http=HandleRequest()
+    db=Hande_DB()
 
     @data(*cases)
     def test_invest(self,case):
@@ -36,8 +39,8 @@ class TestInvest(unittest.TestCase):
         # 请求方法
         method=case['method']
         # 请求头
+        headers = eval(conf.get('env', 'headers'))
         if case['interface']!='login':
-            headers=eval(conf.get('env','headers'))
             headers['Authorization']=getattr(CaseData,'token_data')
         # 预期结果
         expected=eval(case['expected'])
@@ -49,13 +52,37 @@ class TestInvest(unittest.TestCase):
         res=response.json()
 
         #提取member_id和token
-        if case['title']=='管理员正常登录' and res['msg']=='OK':
-            admin_member_id=jsonpath.jsonpath(res,'$..id')[0]
-            setattr(CaseData,'admin_member_id',str(admin_member_id))
+        if case['interface']=='login' and res['msg']=='OK':
+            member_id=jsonpath.jsonpath(res,'$..id')[0]
+            setattr(CaseData,'member_id',str(member_id))
             token_type=jsonpath.jsonpath(res,'$..token_type')[0]
             token = jsonpath.jsonpath(res, '$..token')[0]
             token_data=token_type+' '+token
-
-
+            setattr(CaseData,'token_data',token_data)
+            #提取项目id
+        elif case['interface']=='add'and res['msg']:
+            loan_id=jsonpath.jsonpath(res,'$..id')[0]
+            setattr(CaseData,'loan_id',str(loan_id))
 
         # 断言
+        try:
+            self.assertEqual(expected['code'],res['code'])
+            self.assertEqual(expected['msg'], res['msg'])
+            if case['check_sql']:
+                sql=replace_data(case['check_sql'])
+                status=self.db.get_one(sql)[0]
+                self.assertEqual(expected['status'],status)
+        except AssertionError as e:
+            self.excel.write_excel(row=row,column=8,value='未通过')
+            mylog.info('用例：{}---->执行未通过'.format(case['title']))
+            mylog.error(e)
+            print('预期结果：{}'.format(expected))
+            print('实际结果：{}'.format(res))
+            raise e
+        else:
+            self.excel.write_excel(row=row,column=8,value='通过')
+            mylog.info('用例：{}---->执行已通过'.format(case['title']))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.close()
